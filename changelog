@@ -1,0 +1,81 @@
+#!/bin/bash
+
+CHANGELOG_FILENAME=CHANGELOG.md
+
+GIT_REMOTE=`git remote -v | tail -1`
+
+if [ -z "$GIT_REMOTE" ]; then
+    echo "No git remote. Please add one!"
+    exit 0;
+fi
+
+# get namespace/repository
+PROVIDER_URL=`git remote -v | sed -r "s/.*git@(.*):.*/\1/" | tail -1`
+REPOSITORY=`git remote -v | sed -r "s/.*git@$PROVIDER_URL:(.*)\.git.*/\1/" | tail -1`
+# make urls
+REPOSITORY_URL="https://$PROVIDER_URL/$REPOSITORY"
+REPOSITORY_ISSUES_URL="$REPOSITORY_URL/issues"
+
+# get tag parts
+LAST_TAG=`git tag | tac | head -n 1`
+TAG_PARTS=`echo $LAST_TAG | grep -o '[0-9]'`
+
+RANGE=`[[ ! -z "$LAST_TAG" ]] && echo "$LAST_TAG...HEAD" || echo ""`
+
+CHANGELOG_COMMITS=`git log --pretty=format:'- %s' --no-merges $RANGE |
+                    sed -r "s|#([0-9]+)|[#\1]($REPOSITORY_ISSUES_URL/\1)|g"`
+
+# if no arguments, exit with message
+if [[ $# -eq 0 ]] ; then
+    printf "\\nPlease provide a version number/string or a semver versioning string
+    (major|minor|patch) !!\\n\\n"
+    exit 1
+fi
+
+case "$1" in
+    ("last") LN=-1 ;;
+    ("major") LN=1 ;;
+    ("minor") LN=2 ;;
+    ("patch") LN=3 ;;
+    (*) LN=0 ;;
+esac
+
+if [ $LN = -1 ]; then
+    echo `[[ ! -z "$LAST_TAG" ]] && echo "$LAST_TAG\\n" || echo "No tags found!"`
+    exit 1
+elif [ $LN = 0 ]; then
+    TAG=$1
+elif [ -z "$LAST_TAG" ]; then
+    # if no tags defined and if using semver versioning strings, exit
+    printf "\\nNo tags found! \\nYou cannot use semver strings (major|minor|patch)...
+        \\nPlease define a version."
+    exit 0;
+else
+    PART_VALUE=`echo "$TAG_PARTS" | sed -n ${LN}p`
+    PART_VALUE=`echo $(($PART_VALUE + 1))`
+
+    TAG_PARTS=`echo "$TAG_PARTS" | sed "${LN}s/^.*$/$PART_VALUE/"`
+    TAG=`echo "$TAG_PARTS" | paste -sd "." -`
+fi
+
+# if changelog doesn't exist, start it up
+if [ ! -f $CHANGELOG_FILENAME ]; then
+    printf "# Release Notes\\n\\n\\n" > $CHANGELOG_FILENAME
+fi
+
+# output tag header along with commits, to changelog file
+SED_CHANGELOG=`echo "\n## $TAG\n\n$CHANGELOG_COMMITS\n"`
+AWK_OUTPUT=`awk -v n='3' -v s="$SED_CHANGELOG" 'NR == n {print s} {print}' CHANGELOG.md`
+
+echo "$AWK_OUTPUT" > $CHANGELOG_FILENAME
+
+# commit changelog file
+git add $CHANGELOG_FILENAME
+git commit -m "changelog updated to $TAG"
+
+printf "\\n===================================================================\\n"
+printf "Changelog updated to tag $TAG and committed to GIT!"
+printf "\\n\\n"
+printf "DON'T FORGET to <git tag $TAG> once you merge to <master> branch!!"
+printf "\\n"
+printf "===================================================================\\n\\n"

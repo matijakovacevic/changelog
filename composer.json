@@ -1,0 +1,25 @@
+{
+    "name": "matijakovacevic/changelog",
+    "description": "Update and version CHANGELOG.md using local git commit messages and tags",
+    "type": "library",
+    "keywords": [
+        "changelog",
+        "update",
+        "script"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matija Kovačević",
+            "email": "mata987@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/matijakovacevic/changelog/issues"
+    },
+    "prefer-stable": true,
+    "bin": [
+        "changelog"
+    ]
+}
+
