@@ -1,7 +1,24 @@
-# Changelog
+# Changelog update script
 
-Simple bash script to (version) update CHANGELOG.md using (local) GIT's commit messages and tags, while ignoring merge commits.
+Simple bash script to (version) update CHANGELOG.md using local GIT commit messages and tags.
 
+## Introduction
+
+The whole point of the script is to automate the process of updating the changelog, by
+writing your commit messages properly, so they are understood by others and properly "mark"
+the changes done in your code.
+
+A good article on "How to Write a Git Commit Message" [https://chris.beams.io/posts/git-commit/]
+
+Generated output of the script can be seen in this package changelog file, 
+thus following 'eat your own dog food' principle.
+
+## Notice
+
+The script is easily "hackable", meaning it doesn't have validation for tags and such.
+
+The whole point of the script is to help you automate the process and by inputting
+jibberish you will only do harm to your own time.
 
 ## MacOS notice
 
@@ -25,6 +42,18 @@ composer global require matijakovacevic/changelog
 
 ## Usage
 
+If there is no CHANGELOG.md, the script will create it.
+Otherwise, it gets the commits made from the last tag, ignoring merge commits, and
+puts them in the CHANGELOG.md file, as items under the 'new version' header.
+
+The header is generated according to the last found tag, following semantic versioning [https://semver.org/].
+You can provide arguments like _(major|minor|patch)_ if there are tags to be parsed,
+otherwise you can use your own version e.g. _1.5.2_
+
+After completion, it will make a commit to the active branch, with changed CHANGELOG.md file 
+and a commit message "changelog updated to $TAG"
+
+
 ```bash
 changelog [major|minor|patch]
 changelog 1.0.1
@@ -41,18 +70,14 @@ or globally
 changelog ...
 ```
 
-## Related stuff you should know about:
+## Related stuff:
 
 Keep a Changelog [https://keepachangelog.com/en/1.0.0/]
 
 github - Good ways to manage a changelog using git? - Stack Overflow 
 [https://stackoverflow.com/questions/3523534/good-ways-to-manage-a-changelog-using-git]
 
-Semantic Versioning 2.0.0 [https://semver.org/]
-
-How to Write a Git Commit Message [https://chris.beams.io/posts/git-commit/]
-
-## Some libraries for managing:
+## Some (more advanced) libraries:
 
 As I'm currently in PHP ecosystem, most of these are PHP libraries:
 
