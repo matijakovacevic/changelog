@@ -2,6 +2,15 @@
 
 Simple bash script to (version) update CHANGELOG.md using (local) GIT's commit messages and tags, while ignoring merge commits.
 
+
+## MacOS notice
+
+As the script uses GNU sed, it will not work on MacOS out-of-the-box (which uses BSD sed).
+If you want it to work on MacOS, you need to install `gsed` (GNU sed) and symlink it as `sed`.
+
+http://gridlab-d.shoutwiki.com/wiki/Mac_OSX/Gsed
+
+
 ## Installation
 
 Per project
